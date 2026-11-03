@@ -1,56 +1,50 @@
-# Welcome to your Expo app 👋
+# Mindful Spend
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile-first personal budgeting app for quickly logging daily expenses, understanding food spending, and building better saving habits.
 
-## Get started
+## Product goals
 
-1. Install dependencies
+- Log an expense in a few taps.
+- Make food spending visible by day, week, and month.
+- Set monthly budgets and savings targets.
+- Show simple, useful trends without turning budgeting into a chore.
+- Keep the first version private and usable on a personal phone.
 
-   ```bash
-   npm install
-   ```
+## Suggested MVP
 
-2. Start the app
+1. Add, edit, and delete expenses.
+2. Categorize spending, with useful food subcategories such as groceries, restaurants, delivery, coffee, and snacks.
+3. Show today's spending and the current month's remaining budget.
+4. Show weekly and monthly food-spending summaries.
+5. Store data locally on the device, with optional cloud backup added later.
 
-   ```bash
-   npx expo start
-   ```
+## Tech stack
 
-In the output, you'll find options to open the app in a
+- Expo and React Native
+- TypeScript
+- Expo Router for navigation
+- Local-first storage for the initial personal version
+- EAS Build when a standalone install is needed
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Run on a phone
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Use a supported Node.js LTS release (the repo defaults to Node 22 with nvm), install Expo Go on the phone, then run:
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Scan the displayed QR code. For a standalone app with its own icon and name, switch to an Expo development or production build through EAS.
 
-### Other setup steps
+## Development
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npm run lint
+npx tsc --noEmit
+npm run ios       # iOS simulator
+npm run android   # Android emulator
+npm run web       # browser
+```
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+App routes live in `src/app`.
