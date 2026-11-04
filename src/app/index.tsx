@@ -1,4 +1,13 @@
 import { StyleSheet, Text, View } from "react-native";
+import type { Metadata } from "expo-router/server";
+
+export function generateMetadata(): Metadata {
+  return {
+    title: "Mindful Spend",
+    description:
+      "Track daily expenses, understand food spending, and build better saving habits.",
+  };
+}
 
 export default function Index() {
   return (

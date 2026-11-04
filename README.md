@@ -37,6 +37,20 @@ npx expo start
 
 Scan the displayed QR code. For a standalone app with its own icon and name, switch to an Expo development or production build through EAS.
 
+## Web app
+
+The static web build is deployed to GitHub Pages at:
+
+<https://bricenoana.github.io/mindful-spend/>
+
+Create the same production build locally with:
+
+```bash
+npm run export:web
+```
+
+Pushes to `main` automatically build and deploy the contents of `dist` through GitHub Actions.
+
 ## Development
 
 ```bash
