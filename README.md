@@ -8,15 +8,16 @@ A mobile-first personal budgeting app for quickly logging daily expenses, unders
 - Make food spending visible by day, week, and month.
 - Set monthly budgets and savings targets.
 - Show simple, useful trends without turning budgeting into a chore.
-- Keep the first version private and usable on a personal phone.
+- Keep the first version local-first and easy to use on a phone.
 
-## Suggested MVP
+## Current features
 
-1. Add, edit, and delete expenses.
-2. Categorize spending, with useful food subcategories such as groceries, restaurants, delivery, coffee, and snacks.
-3. Show today's spending and the current month's remaining budget.
-4. Show weekly and monthly food-spending summaries.
-5. Store data locally on the device, with optional cloud backup added later.
+1. Add and delete daily expenses.
+2. Categorize spending as food, groceries, or miscellaneous.
+3. View monthly category totals and a seven-day spending trend.
+4. Earn $15 for each completed day with no food or miscellaneous spending.
+5. Set a reward name and savings target.
+6. Store data locally in the browser.
 
 ## Tech stack
 
