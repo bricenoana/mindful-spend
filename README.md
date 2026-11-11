@@ -15,7 +15,7 @@ A mobile-first personal budgeting app for quickly logging daily expenses, unders
 1. Add and delete daily expenses.
 2. Categorize spending as food, groceries, or miscellaneous.
 3. View monthly category totals and a seven-day spending trend.
-4. Earn $15 for each completed day with no food or miscellaneous spending.
+4. Save the unused portion of a $15 daily allowance after subtracting that day's expenses.
 5. Set a reward name and savings target.
 6. Store data locally in the browser.
 

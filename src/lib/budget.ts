@@ -53,27 +53,36 @@ export function getRecentDays(count: number, endDate = localDateKey()) {
   );
 }
 
-export function getNoSpendDays(
+export function getDailySavings(
   expenses: Expense[],
   trackingStarted: string,
   today = localDateKey(),
 ) {
-  const blockedDates = new Set(
-    expenses
-      .filter(
-        (expense) =>
-          expense.category === "Food" || expense.category === "Miscellaneous",
-      )
-      .map((expense) => expense.date),
-  );
-  const dates: string[] = [];
+  const spendingByDate = new Map<string, number>();
+
+  expenses.forEach((expense) => {
+    const currentCents = spendingByDate.get(expense.date) ?? 0;
+    spendingByDate.set(
+      expense.date,
+      currentCents + Math.round(expense.amount * 100),
+    );
+  });
+
+  const dailySavings: { date: string; saved: number; spent: number }[] = [];
+  const dailyAllowanceCents = DAILY_SAVINGS * 100;
   let cursor = trackingStarted;
 
   while (cursor < today) {
-    if (!blockedDates.has(cursor)) dates.push(cursor);
+    const spentCents = spendingByDate.get(cursor) ?? 0;
+    dailySavings.push({
+      date: cursor,
+      saved: Math.max(dailyAllowanceCents - spentCents, 0) / 100,
+      spent: spentCents / 100,
+    });
     cursor = addDays(cursor, 1);
   }
-  return dates;
+
+  return dailySavings;
 }
 
 export function formatMoney(amount: number) {

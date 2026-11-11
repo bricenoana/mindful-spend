@@ -21,7 +21,7 @@ import {
   formatMoney,
   formatShortDate,
   formatWeekday,
-  getNoSpendDays,
+  getDailySavings,
   getRecentDays,
   isBudgetState,
   isValidDateKey,
@@ -116,12 +116,12 @@ export default function Index() {
     (sum, expense) => sum + expense.amount,
     0,
   );
-  const noSpendDays = getNoSpendDays(
+  const dailySavings = getDailySavings(
     budget.expenses,
     budget.trackingStarted,
     today,
   );
-  const savings = noSpendDays.length * DAILY_SAVINGS;
+  const savings = dailySavings.reduce((sum, day) => sum + day.saved, 0);
   const rewardTarget = Math.max(budget.reward.amount, 1);
   const rewardProgress = Math.min(savings / rewardTarget, 1);
   const sortedExpenses = [...budget.expenses].sort(
@@ -196,7 +196,7 @@ export default function Index() {
         <View style={[styles.statGrid, compact && styles.stack]}>
           <StatCard label="THIS MONTH" value={formatMoney(monthTotal)} />
           <StatCard label="SAVED" value={formatMoney(savings)} accent />
-          <StatCard label="NO-SPEND DAYS" value={String(noSpendDays.length)} />
+          <StatCard label="DAYS TRACKED" value={String(dailySavings.length)} />
         </View>
 
         <View style={[styles.mainGrid, compact && styles.stack]}>
@@ -492,7 +492,7 @@ export default function Index() {
               </View>
               <View style={styles.savingsMath}>
                 <Text style={styles.savingsMathText}>
-                  {noSpendDays.length} × {formatMoney(DAILY_SAVINGS)}
+                  {formatMoney(DAILY_SAVINGS)} daily allowance
                 </Text>
                 <Text style={styles.savingsMathText}>
                   {Math.round(rewardProgress * 100)}%
