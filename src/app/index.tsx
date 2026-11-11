@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import {
+  addDays,
   CATEGORIES,
   Category,
   createDefaultState,
@@ -55,6 +56,8 @@ export default function Index() {
   const [rewardName, setRewardName] = useState("Switch 2");
   const [rewardAmount, setRewardAmount] = useState("550");
   const [goalSaved, setGoalSaved] = useState(false);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedDay, setSelectedDay] = useState(localDateKey);
 
   useEffect(() => {
     const loadStoredBudget = globalThis.setTimeout(() => {
@@ -97,7 +100,8 @@ export default function Index() {
       .filter((expense) => expense.category === item)
       .reduce((sum, expense) => sum + expense.amount, 0),
   }));
-  const recentDays = getRecentDays(7, today);
+  const weekEnd = addDays(today, -weekOffset * 7);
+  const recentDays = getRecentDays(7, weekEnd);
   const trend = recentDays.map((day) => ({
     day,
     total: budget.expenses
@@ -105,6 +109,13 @@ export default function Index() {
       .reduce((sum, expense) => sum + expense.amount, 0),
   }));
   const maxTrend = Math.max(...trend.map((item) => item.total), 1);
+  const selectedDayExpenses = budget.expenses
+    .filter((expense) => expense.date === selectedDay)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const selectedDayTotal = selectedDayExpenses.reduce(
+    (sum, expense) => sum + expense.amount,
+    0,
+  );
   const noSpendDays = getNoSpendDays(
     budget.expenses,
     budget.trackingStarted,
@@ -166,6 +177,12 @@ export default function Index() {
     globalThis.setTimeout(() => setGoalSaved(false), 1600);
   }
 
+  function moveWeek(amount: number) {
+    const nextOffset = Math.max(0, weekOffset + amount);
+    setWeekOffset(nextOffset);
+    setSelectedDay(addDays(today, -nextOffset * 7));
+  }
+
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
       <View style={styles.shell}>
@@ -174,7 +191,6 @@ export default function Index() {
             <View style={styles.mark} />
             <Text style={styles.wordmark}>MINDFUL SPEND</Text>
           </View>
-          <Text style={styles.title}>Dashboard</Text>
         </View>
 
         <View style={[styles.statGrid, compact && styles.stack]}>
@@ -268,25 +284,123 @@ export default function Index() {
               </Pressable>
             </Section>
 
-            <Section title="7-day trend">
+            <Section
+              headerAction={
+                <View style={styles.weekNav}>
+                  <Pressable
+                    accessibilityLabel="Show previous week"
+                    accessibilityRole="button"
+                    onPress={() => moveWeek(1)}
+                    style={styles.weekNavButton}
+                  >
+                    <Text style={styles.weekNavButtonText}>‹</Text>
+                  </Pressable>
+                  <Text style={styles.weekRange}>
+                    {formatShortDate(recentDays[0])}–{formatShortDate(recentDays[6])}
+                  </Text>
+                  <Pressable
+                    accessibilityLabel="Show next week"
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: weekOffset === 0 }}
+                    disabled={weekOffset === 0}
+                    onPress={() => moveWeek(-1)}
+                    style={[
+                      styles.weekNavButton,
+                      weekOffset === 0 && styles.weekNavButtonDisabled,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.weekNavButtonText,
+                        weekOffset === 0 && styles.weekNavButtonTextDisabled,
+                      ]}
+                    >
+                      ›
+                    </Text>
+                  </Pressable>
+                </View>
+              }
+              title="7-day trend"
+            >
               <View style={styles.chart}>
                 {trend.map((item) => {
                   const barHeight = item.total
                     ? 20 + (item.total / maxTrend) * 112
                     : 4;
+                  const selected = selectedDay === item.day;
                   return (
-                    <View key={item.day} style={styles.chartColumn}>
+                    <Pressable
+                      accessibilityLabel={`${formatWeekday(item.day)}, ${formatShortDate(item.day)}, ${formatMoney(item.total)}. View expenses`}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                      key={item.day}
+                      onPress={() => setSelectedDay(item.day)}
+                      style={[
+                        styles.chartColumn,
+                        selected && styles.chartColumnSelected,
+                      ]}
+                    >
                       <Text style={styles.chartAmount}>
                         {item.total ? formatMoney(item.total) : "—"}
                       </Text>
                       <View style={styles.barTrack}>
-                        <View style={[styles.bar, { height: barHeight }]} />
+                        <View
+                          style={[
+                            styles.bar,
+                            selected && styles.barSelected,
+                            { height: barHeight },
+                          ]}
+                        />
                       </View>
                       <Text style={styles.chartDay}>{formatWeekday(item.day)}</Text>
                       <Text style={styles.chartDate}>{formatShortDate(item.day)}</Text>
-                    </View>
+                    </Pressable>
                   );
                 })}
+              </View>
+
+              <View style={styles.dayBreakdown}>
+                <View style={styles.dayBreakdownHeader}>
+                  <Text style={styles.dayBreakdownTitle}>
+                    {formatWeekday(selectedDay)}, {formatShortDate(selectedDay)}
+                  </Text>
+                  <Text style={styles.dayBreakdownTotal}>
+                    {formatMoney(selectedDayTotal)}
+                  </Text>
+                </View>
+                {selectedDayExpenses.length ? (
+                  selectedDayExpenses.map((expense) => (
+                    <View key={expense.id} style={styles.dayExpenseRow}>
+                      <View
+                        style={[
+                          styles.categoryDot,
+                          { backgroundColor: CATEGORY_COLORS[expense.category] },
+                        ]}
+                      />
+                      <View style={styles.expenseDetails}>
+                        <Text style={styles.expenseCategory}>{expense.category}</Text>
+                        {expense.note ? (
+                          <Text numberOfLines={2} style={styles.expenseMeta}>
+                            {expense.note}
+                          </Text>
+                        ) : null}
+                      </View>
+                      <Text style={styles.expenseAmount}>
+                        {formatMoney(expense.amount)}
+                      </Text>
+                      <Pressable
+                        accessibilityLabel={`Delete ${expense.category} expense`}
+                        accessibilityRole="button"
+                        onPress={() => deleteExpense(expense.id)}
+                        style={styles.deleteButton}
+                      >
+                        <Text style={styles.deleteButtonText}>×</Text>
+                      </Pressable>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.emptyDay}>No expenses for this day.</Text>
+                )}
               </View>
             </Section>
 
@@ -447,16 +561,21 @@ function Section({
   title,
   children,
   dark = false,
+  headerAction,
 }: {
   title: string;
   children: React.ReactNode;
   dark?: boolean;
+  headerAction?: React.ReactNode;
 }) {
   return (
     <View style={[styles.section, dark && styles.darkSection]}>
-      <Text style={[styles.sectionTitle, dark && styles.darkSectionTitle]}>
-        {title}
-      </Text>
+      <View style={styles.sectionHeadingRow}>
+        <Text style={[styles.sectionTitle, dark && styles.darkSectionTitle]}>
+          {title}
+        </Text>
+        {headerAction}
+      </View>
       {children}
     </View>
   );
@@ -490,7 +609,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     width: "100%",
   },
-  header: { paddingBottom: 28, paddingTop: 42 },
+  header: { paddingBottom: 22, paddingTop: 42 },
   wordmarkRow: { alignItems: "center", flexDirection: "row", gap: 9 },
   mark: { backgroundColor: "#315E46", borderRadius: 99, height: 10, width: 10 },
   wordmark: {
@@ -498,13 +617,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 1.7,
-  },
-  title: {
-    color: "#172B22",
-    fontSize: 42,
-    fontWeight: "800",
-    letterSpacing: -1.5,
-    marginTop: 16,
   },
   statGrid: { flexDirection: "row", gap: 14 },
   stack: { flexDirection: "column" },
@@ -559,6 +671,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "800",
     letterSpacing: -0.3,
+  },
+  sectionHeadingRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 20,
   },
   darkSectionTitle: { color: "#FFFFFF" },
@@ -632,11 +749,15 @@ const styles = StyleSheet.create({
   },
   chartColumn: {
     alignItems: "center",
+    borderRadius: 10,
     flex: 1,
     height: "100%",
     justifyContent: "flex-end",
     minWidth: 0,
+    paddingHorizontal: 3,
+    paddingVertical: 4,
   },
+  chartColumnSelected: { backgroundColor: "#EDF2EB" },
   chartAmount: { color: "#6D6D67", fontSize: 10, marginBottom: 6 },
   barTrack: { height: 136, justifyContent: "flex-end", width: "72%" },
   bar: {
@@ -645,6 +766,7 @@ const styles = StyleSheet.create({
     minHeight: 4,
     width: "100%",
   },
+  barSelected: { backgroundColor: "#315E46" },
   chartDay: {
     color: "#313E37",
     fontSize: 11,
@@ -652,6 +774,48 @@ const styles = StyleSheet.create({
     marginTop: 7,
   },
   chartDate: { color: "#8B8A83", fontSize: 9, marginTop: 2 },
+  weekNav: { alignItems: "center", flexDirection: "row", gap: 8 },
+  weekNavButton: {
+    alignItems: "center",
+    backgroundColor: "#F0EEE6",
+    borderColor: "#DAD7CE",
+    borderRadius: 9,
+    borderWidth: 1,
+    height: 34,
+    justifyContent: "center",
+    width: 34,
+  },
+  weekNavButtonDisabled: { backgroundColor: "#F7F5EF", borderColor: "#E8E5DD" },
+  weekNavButtonText: {
+    color: "#315E46",
+    fontSize: 25,
+    fontWeight: "700",
+    lineHeight: 27,
+  },
+  weekNavButtonTextDisabled: { color: "#BBB9B1" },
+  weekRange: { color: "#696A64", fontSize: 11, fontWeight: "700" },
+  dayBreakdown: {
+    borderTopColor: "#E3E0D8",
+    borderTopWidth: 1,
+    marginTop: 18,
+    paddingTop: 18,
+  },
+  dayBreakdownHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  dayBreakdownTitle: { color: "#27372F", fontSize: 15, fontWeight: "800" },
+  dayBreakdownTotal: { color: "#172B22", fontSize: 15, fontWeight: "800" },
+  dayExpenseRow: {
+    alignItems: "center",
+    borderTopColor: "#ECE9E1",
+    borderTopWidth: 1,
+    flexDirection: "row",
+    minHeight: 58,
+  },
+  emptyDay: { color: "#85837B", fontSize: 13, paddingTop: 12 },
   expenseRow: {
     alignItems: "center",
     borderTopColor: "#E3E0D8",
